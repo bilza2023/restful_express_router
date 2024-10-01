@@ -10,6 +10,12 @@ class RestfulExpressRouter {
     this.middlewareForCreate  = [];
     this.middlewareForUpdate  = [];
     this.middlewareForDelete  = [];
+    this.extraRoutes = [];
+  }
+
+  // Method to add extra routes
+  addExtraRoute(route) {
+    this.extraRoutes.push(route);
   }
 
   getRouter() {
@@ -22,6 +28,12 @@ class RestfulExpressRouter {
     router.put('/:id', ...this.middlewareForUpdate, this.updateItem.bind(this)); 
     router.delete('/:id', ...this.middlewareForDelete, this.deleteItem.bind(this)); 
 
+    // Attach additional routes
+    this.extraRoutes.forEach(route => {
+      const { method, path, middlewares, handler } = route;
+      router[method](path, ...middlewares, handler.bind(this));
+    });
+    
     return router;
   }
 
