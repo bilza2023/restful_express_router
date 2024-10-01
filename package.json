@@ -1,5 +1,5 @@
 {
-  "name": "expressrestrouter",
+  "name": "restful_express_router",
   "version": "0.0.1",
   "description": "This is a simple function which takes a config object along with a mongoose model and return an express-router with a restful api ",
   "main": "index.js",
