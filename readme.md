@@ -1,75 +1,6 @@
-# expressRestRouter
+# restful_express_router
 
-The **expressRestRouter** provides a simple class that takes a Mongoose model and returns a RESTful Express router. It simplifies the process of creating RESTful APIs for your Mongoose models with built-in CRUD operations.
-
-## Features
-
-- Automatically generates RESTful routes for standard CRUD operations.
-- Option to add global middleware for authentication, logging, etc.
-- Pagination, sorting, and filtering capabilities for list queries.
-
-## Installation
-
-You can install the package using npm:
-
-```bash
-npm install expressrestrouter
-```
-
-Usage
-Example
-Here's a simple example of how to use the expressRestRouter in your Express application:
-
-require('dotenv').config();
-const db = require("./mongo.js"); // Database connection
-const mongoose = require('mongoose');
-const express = require('express');
-const RestfulRouter = require('./src/RestfulRouter.js'); 
-
-const app = express();
-app.use(express.json());
-
-// Define a simple Mongoose model
-const UserSchema = new mongoose.Schema({
-  email: String,
-  password: String,
-});
-const User = mongoose.model('User', UserSchema);
-
-// Create a RESTful router for the User model
-let restfulRouter = new RestfulRouter(User);
-
-// Use the RESTful router for the '/users' endpoint
-app.use('/users', restfulRouter.getRouter());
-
-app.get('/', (req, res) => res.status(200).json({ message: "Welcome to ExpressRestRouter 0.0.1" }));
-
-// Start the server
-const PORT = 5000;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
-
-API Manual
-
-### API Manual
-
-| HTTP Method | Route         | Description                           | Example Request                                                                                     |
-|-------------|---------------|---------------------------------------|-----------------------------------------------------------------------------------------------------|
-| GET         | `/`           | List all items                       | `GET /users?sort=-_id&limit=10&page=1`                                                             |
-| GET         | `/:id`        | Get a single item by ID              | `GET /users/60c72b2f9b1d4a001f8e4b2c`                                                              |
-| POST        | `/`           | Create a new item                    | `POST /users` with body `{ "email": "user@example.com", "password": "password123" }`             |
-| PUT         | `/:id`        | Update an existing item by ID        | `PUT /users/60c72b2f9b1d4a001f8e4b2c` with body `{ "email": "newemail@example.com" }`             |
-| DELETE      | `/:id`        | Delete an item by ID                 | `DELETE /users/60c72b2f9b1d4a001f8e4b2c`                                                          |
-
-
-Here's the complete README content in a single block for you to copy and paste directly into your README.md file:
-
-markdown
-Copy code
-# expressRestRouter
-
-The **expressRestRouter** provides a simple class that takes a Mongoose model and returns a RESTful Express router. It simplifies the process of creating RESTful APIs for your Mongoose models with built-in CRUD operations.
+The **restful_express_router**  provides a simple class (**RestfulExpressRouter**) that takes a Mongoose model and returns a RESTful Express router. It simplifies the process of creating RESTful APIs for your Mongoose models with built-in CRUD operations.
 
 ## Features
 
@@ -89,12 +20,12 @@ Usage Example
 Here's a simple example of how to use the expressRestRouter in your Express application:
 
 ```javascript
-
 require('dotenv').config();
 const db = require("./mongo.js"); // Database connection
 const mongoose = require('mongoose');
 const express = require('express');
-const RestfulRouter = require('./src/RestfulRouter.js'); 
+//-- here it uses index.js but you have to use restful_express_router 
+const RestfulRouter = require('./index.js'); 
 
 const app = express();
 app.use(express.json());
@@ -178,6 +109,52 @@ app.listen(PORT, () => {
 </ul>
 
 
+<hr/>
+## Middleware Functionality
+The RestfulExpressRouter class allows for the use of both global middleware (applied to all routes) and route-specific middleware (applied to individual routes). When creating an instance of the router, you can define middleware for each CRUD route separately. This flexibility enables you to apply custom middleware for specific routes, such as authentication, logging, or validation, while still benefiting from global middleware that applies across all routes.
+
+For example, you can specify middleware for the GET, POST, PUT, and DELETE routes independently, ensuring that each route handles its unique logic and authorization requirements.
+
+
+<table>
+    <thead>
+        <tr>
+            <th>Route</th>
+            <th>Middleware Property</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>GET / (list all items)</td>
+            <td>routeMiddleware.list</td>
+            <td>Middleware for listing items</td>
+        </tr>
+        <tr>
+            <td>GET /:id (get item by ID)</td>
+            <td>routeMiddleware.getById</td>
+            <td>Middleware for retrieving a single item by ID</td>
+        </tr>
+        <tr>
+            <td>POST / (create new item)</td>
+            <td>routeMiddleware.create</td>
+            <td>Middleware for creating a new item</td>
+        </tr>
+        <tr>
+            <td>PUT /:id (update item)</td>
+            <td>routeMiddleware.update</td>
+            <td>Middleware for updating an existing item</td>
+        </tr>
+        <tr>
+            <td>DELETE /:id (delete item)</td>
+            <td>routeMiddleware.delete</td>
+            <td>Middleware for deleting an item by ID</td>
+        </tr>
+    </tbody>
+</table>
+
+
+
 ## Error Handling
 The library provides standard error responses:
 
@@ -186,4 +163,8 @@ The library provides standard error responses:
 
 ## License
 This project is licensed under the MIT License.
+
+## Author
+
+Bilal Tariq
 

@@ -1,5 +1,5 @@
 
-const RestfulRouter = require('./src/RestfulRouter');
-module.exports = RestfulRouter
+const RestfulExpressRouter = require('./src/RestfulExpressRouter');
+module.exports = RestfulExpressRouter
 
 

@@ -1,31 +1,36 @@
 const express = require('express');
 
-class RestfulRouter {
-  constructor(model,globalMiddleware=[]) {
+class RestfulExpressRouter {
+  constructor(model) {
     this.model = model;
-    this.globalMiddleware = globalMiddleware; 
+    
+    // Middleware for each route, default to an empty array if not provided
+    this.middlewareForList    = [];
+    this.middlewareForGetById = [];
+    this.middlewareForCreate  = [];
+    this.middlewareForUpdate  = [];
+    this.middlewareForDelete  = [];
   }
 
   getRouter() {
     const router = express.Router();
-   
-    if (this.globalMiddleware.length > 0) {
-      router.use(...this.globalMiddleware); 
-    }
-    router.get('/', this.listItems.bind(this)); // Bind 'this' context
-    router.get('/:id', this.getItemById.bind(this)); // Bind 'this' context
-    router.post('/', this.createItem.bind(this)); // Bind 'this' context
-    router.put('/:id', this.updateItem.bind(this)); // Bind 'this' context
-    router.delete('/:id', this.deleteItem.bind(this)); // Bind 'this' context
+
+    // Attach routes with specific middleware arrays
+    router.get('/', ...this.middlewareForList, this.listItems.bind(this)); 
+    router.get('/:id', ...this.middlewareForGetById, this.getItemById.bind(this)); 
+    router.post('/', ...this.middlewareForCreate, this.createItem.bind(this)); 
+    router.put('/:id', ...this.middlewareForUpdate, this.updateItem.bind(this)); 
+    router.delete('/:id', ...this.middlewareForDelete, this.deleteItem.bind(this)); 
 
     return router;
   }
 
+  // Controller methods remain the same
   async listItems(req, res) {
     try {
-      const { sort = '-_id', limit = 10, page = 1,fields, ...filters } = req.query;
+      const { sort = '-_id', limit = 10, page = 1, fields, ...filters } = req.query;
       const query = this.model.find(filters)
-      .select(fields) 
+        .select(fields)
         .sort(sort)
         .limit(Number(limit))
         .skip(Number(limit) * (Number(page) - 1));
@@ -79,4 +84,4 @@ class RestfulRouter {
   }
 }
 
-module.exports = RestfulRouter;
+module.exports = RestfulExpressRouter;
