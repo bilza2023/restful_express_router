@@ -1,31 +1,39 @@
 # restful_express_router
 
-The **restful_express_router**  provides a simple class (**RestfulExpressRouter**) that takes a Mongoose model and returns a RESTful Express router. It simplifies the process of creating RESTful APIs for your Mongoose models with built-in CRUD operations.
+The **restful_express_router** is a lightweight, flexible Node.js package that streamlines the creation of RESTful APIs by automatically generating Express routes for your Mongoose models. With minimal setup, it provides a complete CRUD (Create, Read, Update, Delete) API interface, making it perfect for rapid development while maintaining customization options.
 
+```bash
+Main objective is to keep things very simple and provide a boilerplate to create RESTful Express Routers using mongoose 
+```
 ## Features
 
-- Automatically generates RESTful routes for standard CRUD operations.
-- Option to add global middleware for authentication, logging, etc.
-- Pagination, sorting, and filtering capabilities for list queries.
+- **Automatic Route Generation**: Creates standardized RESTful endpoints for all CRUD operations
+- **Flexible Middleware Support**: Add custom middleware for authentication, logging, or any other purpose
+- **Advanced Query Capabilities**: Built-in support for:
+  - Pagination
+  - Sorting
+  - Field selection
+  - Custom filters
+- **Customizable**: Easy to extend with additional routes and custom handlers
+- **MongoDB/Mongoose Integration**: Seamless integration with your existing Mongoose models
 
 ## Installation
 
-You can install the package using npm:
+Install the package using npm:
 
 ```bash
 npm install restful_express_router
 ```
 
-Usage Example
-Here's a simple example of how to use the expressRestRouter in your Express application:
+## Usage Example
+
+Below is a basic example demonstrating how to create a complete REST API for a User model:
 
 ```javascript
 require('dotenv').config();
-const db = require("./mongo.js"); // Database connection
 const mongoose = require('mongoose');
 const express = require('express');
-//-- here it uses index.js but you have to use restful_express_router 
-const RestfulRouter = require('./index.js'); 
+const RestfulExpressRouter = require('restful_express_router'); 
 
 const app = express();
 app.use(express.json());
@@ -37,11 +45,9 @@ const UserSchema = new mongoose.Schema({
 });
 const User = mongoose.model('User', UserSchema);
 
-// Create a RESTful router for the User model
-let restfulRouter = new RestfulRouter(User);
+let restfulExpressRouter = new RestfulExpressRouter(User);
 
-// Use the RESTful router for the '/users' endpoint
-app.use('/users', restfulRouter.getRouter());
+app.use('/users', restfulExpressRouter.getRouter());
 
 app.get('/', (req, res) => res.status(200).json({ message: "Welcome to ExpressRestRouter 0.0.1" }));
 
@@ -51,10 +57,12 @@ app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
 
+
 ```
 
-
 ## API Manual
+
+### Available Endpoints
 
 <table>
     <thead>
@@ -63,104 +71,123 @@ app.listen(PORT, () => {
             <th>Route</th>
             <th>Description</th>
             <th>Example Request</th>
+            <th>Success Response</th>
         </tr>
     </thead>
     <tbody>
         <tr>
             <td>GET</td>
             <td>/</td>
-            <td>List all items</td>
+            <td>List all items with pagination</td>
             <td>GET /users?sort=-_id&limit=10&page=1</td>
+            <td>200: { data: [...], total: 100, page: 1, limit: 10 }</td>
         </tr>
         <tr>
             <td>GET</td>
             <td>/:id</td>
-            <td>Get a single item by ID</td>
+            <td>Retrieve single item by ID</td>
             <td>GET /users/60c72b2f9b1d4a001f8e4b2c</td>
+            <td>200: { _id: "...", ... }</td>
         </tr>
         <tr>
             <td>POST</td>
             <td>/</td>
-            <td>Create a new item</td>
-            <td>POST /users with body { "email": "user@example.com", "password": "password123" }</td>
+            <td>Create new item</td>
+            <td>POST /users { "email": "user@example.com" }</td>
+            <td>201: { _id: "...", ... }</td>
         </tr>
         <tr>
             <td>PUT</td>
             <td>/:id</td>
-            <td>Update an existing item by ID</td>
-            <td>PUT /users/60c72b2f9b1d4a001f8e4b2c with body { "email": "newemail@example.com" }</td>
+            <td>Update existing item</td>
+            <td>PUT /users/60c72b2f9b1d4a001f8e4b2c { "email": "new@example.com" }</td>
+            <td>200: { _id: "...", ... }</td>
         </tr>
         <tr>
             <td>DELETE</td>
             <td>/:id</td>
-            <td>Delete an item by ID</td>
+            <td>Remove item</td>
             <td>DELETE /users/60c72b2f9b1d4a001f8e4b2c</td>
+            <td>200: { message: "Item deleted successfully" }</td>
         </tr>
     </tbody>
 </table>
 
-<h3>Query Parameters for GET requests</h3>
-<ul>
-    <li><strong>sort:</strong> Specify the field to sort by (e.g., -createdAt for descending).</li>
-    <li><strong>limit:</strong> Number of items to return (default is 10).</li>
-    <li><strong>page:</strong> Specify the page number for pagination (default is 1).</li>
-    <li><strong>fields:</strong> Specify fields to include in the response (e.g., email,password).</li>
-    <li><strong>filters:</strong> Additional filters can be applied based on the model fields (e.g., {"active": true}).</li>
-</ul>
+### Query Parameters
 
+When retrieving lists (GET /), the following query parameters are supported:
 
-<hr/>
+- **sort** (string): Sort by any field. Prefix with `-` for descending order
+  - Example: `sort=-createdAt` or `sort=email`
+- **limit** (number): Number of items per page (default: 10)
+  - Example: `limit=20`
+- **page** (number): Page number for pagination (default: 1)
+  - Example: `page=2`
+- **fields** (string): Comma-separated list of fields to include
+  - Example: `fields=email,createdAt`
+- **filters**: Any model field can be used as a filter
+  - Example: `status=active&role=admin`
+
 ## Middleware Functionality
-The RestfulExpressRouter class allows for the use of both global middleware (applied to all routes) and route-specific middleware (applied to individual routes). When creating an instance of the router, you can define middleware for each CRUD route separately. This flexibility enables you to apply custom middleware for specific routes, such as authentication, logging, or validation, while still benefiting from global middleware that applies across all routes.
 
-For example, you can specify middleware for the GET, POST, PUT, and DELETE routes independently, ensuring that each route handles its unique logic and authorization requirements.
+The RestfulExpressRouter provides a flexible middleware system that allows you to:
+- Add authentication to specific routes
+- Log requests
+- Validate input data
+- Transform responses
+- Handle errors
 
+### Middleware Configuration
+
+Each route type can have its own middleware chain:
 
 <table>
     <thead>
         <tr>
-            <th>Route</th>
+            <th>Route Type</th>
             <th>Middleware Property</th>
-            <th>Description</th>
+            <th>Common Use Cases</th>
         </tr>
     </thead>
     <tbody>
         <tr>
-            <td>GET / (list all items)</td>
-            <td>routeMiddleware.list</td>
-            <td>Middleware for listing items</td>
+            <td>List (GET /)</td>
+            <td>middlewareForList</td>
+            <td>Pagination, filtering, authorization</td>
         </tr>
         <tr>
-            <td>GET /:id (get item by ID)</td>
-            <td>routeMiddleware.getById</td>
-            <td>Middleware for retrieving a single item by ID</td>
+            <td>Get by ID (GET /:id)</td>
+            <td>middlewareForGetById</td>
+            <td>Authorization, data validation</td>
         </tr>
         <tr>
-            <td>POST / (create new item)</td>
-            <td>routeMiddleware.create</td>
-            <td>Middleware for creating a new item</td>
+            <td>Create (POST /)</td>
+            <td>middlewareForCreate</td>
+            <td>Input validation, authorization</td>
         </tr>
         <tr>
-            <td>PUT /:id (update item)</td>
-            <td>routeMiddleware.update</td>
-            <td>Middleware for updating an existing item</td>
+            <td>Update (PUT /:id)</td>
+            <td>middlewareForUpdate</td>
+            <td>Authorization, input validation</td>
         </tr>
         <tr>
-            <td>DELETE /:id (delete item)</td>
-            <td>routeMiddleware.delete</td>
-            <td>Middleware for deleting an item by ID</td>
+            <td>Delete (DELETE /:id)</td>
+            <td>middlewareForDelete</td>
+            <td>Authorization, cascade deletion</td>
         </tr>
     </tbody>
 </table>
 
-## Advance Example
+## Advanced Example
+
+The following example demonstrates how to implement authentication, logging, and custom routes:
 
 ```javascript
 require('dotenv').config();
 const db = require("./mongo.js");
 const mongoose = require('mongoose');
 const express = require('express');
-const RestfulExpressRouter = require('./index.js'); 
+const RestfulExpressRouter = require('restful_express_router'); 
 const jwt = require('jsonwebtoken');
 const login = require('./src/login.js');
 
@@ -199,14 +226,11 @@ const authenticateJWT = (req, res, next) => {
 };
 
 ///////////////////////////////////////////////
-
 let restfulExpressRouter = new RestfulExpressRouter(User);
 
 restfulExpressRouter.middlewareForList = [logRequest];
 restfulExpressRouter.middlewareForGetById = [logRequest];
 restfulExpressRouter.middlewareForUpdate = [authenticateJWT];
-
-
 
 restfulExpressRouter.addExtraRoute(
   {
@@ -222,8 +246,6 @@ restfulExpressRouter.addExtraRoute(
   }
 );
 
-
-
 ////----Here it all comes together
 app.use('/users', restfulExpressRouter.getRouter());
 
@@ -234,19 +256,26 @@ const PORT = 5000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+
 ```
 
-
 ## Error Handling
-The library provides standard error responses:
 
- - 404: Item not found
- - 500: Internal server error
+The router provides consistent error responses:
+
+- **404**: Resource not found
+  - Returned when requesting non-existent items
+- **500**: Internal server error
+  - Returned for database errors or unexpected issues
+- **400**: Bad request
+  - Returned for invalid input data
+- **403**: Forbidden
+  - Returned for authentication/authorization failures
 
 ## License
+
 This project is licensed under the MIT License.
 
 ## Author
 
 Bilal Tariq
-

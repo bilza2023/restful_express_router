@@ -1,5 +1,4 @@
 require('dotenv').config();
-const db = require("./mongo.js");
 const mongoose = require('mongoose');
 const express = require('express');
 const RestfulExpressRouter = require('./index.js'); 
